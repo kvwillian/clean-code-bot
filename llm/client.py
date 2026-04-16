@@ -20,7 +20,8 @@ class LLMConfig:
 
     model: str
     temperature: float = 0.2
-    max_tokens: int = 8192
+    # Refactored output can be long; Groq/OpenAI caps vary by model.
+    max_tokens: int = 16384
 
 
 class LLMClient(ABC):
@@ -109,10 +110,12 @@ def create_llm_client(
     p = (provider or os.environ.get("LLM_PROVIDER", "openai")).strip().lower()
     env_model = os.environ.get("LLM_MODEL")
 
+    max_tok = int(os.environ.get("LLM_MAX_TOKENS", "16384"))
+
     if p == "openai":
         resolved_model = model or env_model or DEFAULT_OPENAI_MODEL
-        return OpenAIClient(), LLMConfig(model=resolved_model)
+        return OpenAIClient(), LLMConfig(model=resolved_model, max_tokens=max_tok)
     if p == "groq":
         resolved_model = model or env_model or DEFAULT_GROQ_MODEL
-        return GroqClient(), LLMConfig(model=resolved_model)
+        return GroqClient(), LLMConfig(model=resolved_model, max_tokens=max_tok)
     raise ValueError(f"Unsupported LLM provider: {provider!r}. Use 'openai' or 'groq'.")

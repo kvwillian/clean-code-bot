@@ -27,6 +27,7 @@ OPENAI_API_KEY=sk-...
 # Optional overrides
 # LLM_PROVIDER=openai
 # LLM_MODEL=gpt-4o-mini
+# LLM_MAX_TOKENS=16384
 ```
 
 For Groq:
@@ -79,6 +80,8 @@ pytest
 ```
 
 This covers the **sanitizer** (injection-style phrases, size limits) and **response parsing** (JSON, optional markdown fences).
+
+The preferred response shape is **small JSON (metadata only)** plus **`---BEGIN_REFACTORED_CODE---` … `---END_REFACTORED_CODE---`** around the full file. That avoids huge Base64 blobs inside JSON (which can hit output token limits and truncate mid-string). Legacy single-JSON responses with `refactored_code` (plain or Base64) still parse.
 
 ### 3. End-to-end test (requires API key)
 
